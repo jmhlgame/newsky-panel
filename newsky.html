@@ -56,4 +56,67 @@
 </head>
 
 <body>
-<h1>Panel d
+<h1>Panel de Vuelos – Newsky</h1>
+
+<input type="text" id="search" placeholder="Buscar por origen, destino o aerolínea…">
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th>Estado</th>
+            <th>Aerolínea</th>
+        </tr>
+    </thead>
+    <tbody id="tablaVuelos"></tbody>
+</table>
+
+<script>
+const API_KEY = "ASP_omuDZofI3Hpz8QRfoC2ezeXl6aGxZ4";
+const ENDPOINT = `https://newsky.app/airline/public/flights?token=${API_KEY}`;
+
+async function cargarVuelos() {
+    try {
+        const res = await fetch(ENDPOINT);
+        const data = await res.json();
+
+        const tabla = document.getElementById("tablaVuelos");
+        tabla.innerHTML = "";
+
+        data.forEach(v => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${v.id || ""}</td>
+                <td>${v.origin || ""}</td>
+                <td>${v.destination || ""}</td>
+                <td><span class="status ${String(v.status).replace(" ", "")}">${v.status}</span></td>
+                <td>${v.airline || ""}</td>
+            `;
+            tabla.appendChild(row);
+        });
+    } catch (e) {
+        console.error("Error al cargar API:", e);
+    }
+}
+
+// Buscador en tiempo real
+document.getElementById("search").addEventListener("keyup", function() {
+    const value = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#tablaVuelos tr");
+
+    rows.forEach(r => {
+        const text = r.innerText.toLowerCase();
+        r.style.display = text.includes(value) ? "" : "none";
+    });
+});
+
+// Carga inicial + refresco automático cada 60 segundos
+cargarVuelos();
+setInterval(cargarVuelos, 60000);
+</script>
+
+</body>
+</html>
